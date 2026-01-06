@@ -23,42 +23,42 @@
     </style>
 </head>
 <body>
-    <div id="app" class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4 overflow-hidden relative">
+<div id="app" class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4 overflow-hidden relative">
 
-      <div class="absolute top-4 right-4 z-10">
-            <div class="relative">
-                <button id="langButton" class="bg-white/20 backdrop-blur-lg text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 hover:bg-white/30 transition-all duration-300 shadow-lg">
-                    <span id="currentLangFlag">🇬🇧</span>
-                    <span id="currentLangText">EN</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
+    <div class="absolute top-4 right-4 z-10">
+        <div class="relative">
+            <button id="langButton" class="bg-white/20 backdrop-blur-lg text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 hover:bg-white/30 transition-all duration-300 shadow-lg">
+                <span id="currentLangFlag">🇬🇧</span>
+                <span id="currentLangText">EN</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div id="langMenu" class="hidden absolute top-full right-0 mt-2 bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden min-w-[140px]">
+                <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="en" data-flag="🇬🇧">
+                    <span class="text-xl">🇬🇧</span>
+                    <span class="text-gray-800 font-medium">English</span>
                 </button>
-
-                <div id="langMenu" class="hidden absolute top-full right-0 mt-2 bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden min-w-[140px]">
-                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="en" data-flag="🇬🇧">
-                        <span class="text-xl">🇬🇧</span>
-                        <span class="text-gray-800 font-medium">English</span>
-                    </button>
-                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="it" data-flag="🇮🇹">
-                        <span class="text-xl">🇮🇹</span>
-                        <span class="text-gray-800 font-medium">Italiano</span>
-                    </button>
-                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="fr" data-flag="🇫🇷">
-                        <span class="text-xl">🇫🇷</span>
-                        <span class="text-gray-800 font-medium">Français</span>
-                    </button>
-                </div>
+                <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="it" data-flag="🇮🇹">
+                    <span class="text-xl">🇮🇹</span>
+                    <span class="text-gray-800 font-medium">Italiano</span>
+                </button>
+                <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="fr" data-flag="🇫🇷">
+                    <span class="text-xl">🇫🇷</span>
+                    <span class="text-gray-800 font-medium">Français</span>
+                </button>
             </div>
         </div>
-
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
-        </div>
-
-        <div id="content" class="relative w-full max-w-md"></div>
     </div>
+
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    </div>
+
+    <div id="content" class="relative w-full max-w-md"></div>
+</div>
 
     <script>
         const questions = {
@@ -367,172 +367,162 @@
             ]
         };
 
-        let currentQuestion = '';
-        let showQuestion = false;
-        let usedQuestions = [];
-        let currentLang = 'en';
-        let menuOpen = false;
+let currentQuestion = '';
+let showQuestion = false;
+let usedQuestions = [];
+let currentLang = 'en';
+let menuOpen = false;
 
-        const langNames = {
-            'en': 'EN',
-            'it': 'IT',
-            'fr': 'FR'
-        };
+const langNames = { en: 'EN', it: 'IT', fr: 'FR' };
 
-        // Language selector functionality
-        document.getElementById('langButton').addEventListener('click', (e) => {
-            e.stopPropagation();
-            menuOpen = !menuOpen;
-            document.getElementById('langMenu').classList.toggle('hidden', !menuOpen);
-        });
+const texts = {
+    en: {
+        title: 'Deep Dive',
+        subtitle: 'A space for authentic connection and meaningful prompts that dive into the unspoken.',
+        tap: 'Tap the question mark to draw a card',
+        questions: 'question',
+        questionsPlural: 'questions',
+        asked: 'asked',
+        drawAnother: 'Draw Another Card',
+        resetMsg: "You've seen all questions! They'll reset on the next draw."
+    },
+    it: {
+        title: 'Deep Dive',
+        subtitle: 'Uno spazio per connessioni autentiche e spunti significativi che scavano nel non detto.',
+        tap: 'Tocca il punto interrogativo per pescare una carta',
+        questions: 'domanda',
+        questionsPlural: 'domande',
+        asked: 'fatta',
+        drawAnother: 'Pesca un\'altra carta',
+        resetMsg: 'Hai visto tutte le domande! Si resetteranno alla prossima pescata.'
+    },
+    fr: {
+        title: 'Deep Dive',
+        subtitle: 'Un espace pour des connexions authentiques et des questions significatives qui explorent le non-dit.',
+        tap: 'Appuyez sur le point d\'interrogation pour tirer une carte',
+        questions: 'question',
+        questionsPlural: 'questions',
+        asked: 'posée',
+        drawAnother: 'Tirer une autre carte',
+        resetMsg: 'Vous avez vu toutes les questions! Elles se réinitialiseront au prochain tirage.'
+    }
+};
 
-        document.addEventListener('click', () => {
-            if (menuOpen) {
-                menuOpen = false;
-                document.getElementById('langMenu').classList.add('hidden');
-            }
-        });
+// --- Funzioni ---
+function drawQuestion() {
+    const availableQuestions = questions[currentLang].filter(q => !usedQuestions.includes(q));
+    if (availableQuestions.length === 0) {
+        usedQuestions = [];
+        return drawQuestion();
+    }
+    const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    currentQuestion = randomQuestion;
+    usedQuestions.push(randomQuestion);
+    showQuestion = true;
+    render();
+}
 
-        document.querySelectorAll('.lang-option').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentLang = btn.dataset.lang;
-                usedQuestions = [];
-                document.getElementById('currentLangFlag').textContent = btn.dataset.flag;
-                document.getElementById('currentLangText').textContent = langNames[currentLang];
-                menuOpen = false;
-                document.getElementById('langMenu').classList.add('hidden');
-            });
-        });
+function handleDrawCard(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    drawQuestion();
+}
 
-        function drawQuestion() {
-            const availableQuestions = questions[currentLang].filter(q => !usedQuestions.includes(q));
+function render() {
+    const content = document.getElementById('content');
+    const t = texts[currentLang];
 
-            if (availableQuestions.length === 0) {
-                usedQuestions = [];
-                return drawQuestion();
-            }
+    if (!showQuestion) {
+        content.innerHTML = `
+            <div class="flex flex-col items-center justify-center space-y-8">
+                <div class="text-center space-y-4 mb-8">
+                    <h1 class="text-5xl font-bold text-white tracking-tight">${t.title}</h1>
+                    <p class="text-white/80 text-lg">${t.subtitle}</p>
+                </div>
 
-            const randomQuestion = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-            currentQuestion = randomQuestion;
-            usedQuestions.push(randomQuestion);
-            showQuestion = true;
-            render();
-        }
-
-        function handleDrawCard(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            drawQuestion();
-        }
-
-        function render() {
-            const content = document.getElementById('content');
-
-            const texts = {
-                en: {
-                    title: 'Deep Dive',
-                    subtitle: 'A space for authentic connection and meaningful prompts that dive into the unspoken.',
-                    tap: 'Tap the question mark to draw a card',
-                    questions: 'question',
-                    questionsPlural: 'questions',
-                    asked: 'asked',
-                    drawAnother: 'Draw Another Card',
-                    resetMsg: "You've seen all questions! They'll reset on the next draw."
-                },
-                it: {
-                    title: 'Deep Dive',
-                    subtitle: 'Uno spazio per connessioni autentiche e spunti significativi che scavano nel non detto.',
-                    tap: 'Tocca il punto interrogativo per pescare una carta',
-                    questions: 'domanda',
-                    questionsPlural: 'domande',
-                    asked: 'fatta',
-                    drawAnother: 'Pesca un\'altra carta',
-                    resetMsg: 'Hai visto tutte le domande! Si resetteranno alla prossima pescata.'
-                },
-                fr: {
-                    title: 'Deep Dive',
-                    subtitle: 'Un espace pour des connexions authentiques et des questions significatives qui explorent le non-dit.',
-                    tap: 'Appuyez sur le point d\'interrogation pour tirer une carte',
-                    questions: 'question',
-                    questionsPlural: 'questions',
-                    asked: 'posée',
-                    drawAnother: 'Tirer une autre carte',
-                    resetMsg: 'Vous avez vu toutes les questions! Elles se réinitialiseront au prochain tirage.'
-                }
-            };
-
-            const t = texts[currentLang];
-             if (!showQuestion) {
-                content.innerHTML = `
-                    <div class="flex flex-col items-center justify-center space-y-8">
-                        <div class="text-center space-y-4 mb-8">
-                            <h1 class="text-5xl font-bold text-white tracking-tight">${t.title}</h1>
-                            <p class="text-white/80 text-lg">${t.subtitle}</p>
-                        </div>
-
-                        <button
-                            id="drawButton"
-                            class="group relative w-64 h-64 bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50"
-                        >
-                            <div class="transition-transform duration-300 group-hover:rotate-12">
-                                <svg viewBox="0 0 100 100" class="w-32 h-32 text-purple-600" fill="currentColor">
-                                    <text x="50" y="50" font-size="80" text-anchor="middle" dominant-baseline="central" font-weight="bold">?</text>
-                                </svg>
-                            </div>
-                            <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity blur-xl"></div>
-                        </button>
-
-                        <p class="text-white/70 text-center text-sm mt-8">${t.tap}</p>
-
-                        ${usedQuestions.length > 0 ? `
-                            <div class="text-white/60 text-sm">
-                                ${usedQuestions.length} / ${questions[currentLang].length} ${usedQuestions.length !== 1 ? t.questionsPlural : t.questions} ${t.asked}
-                            </div>
-                        ` : ''}
+                <button
+                    id="drawButton"
+                    class="group relative w-64 h-64 bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50"
+                >
+                    <div class="transition-transform duration-300 group-hover:rotate-12">
+                        <svg viewBox="0 0 100 100" class="w-32 h-32 text-purple-600" fill="currentColor">
+                            <text x="50" y="50" font-size="80" text-anchor="middle" dominant-baseline="central" font-weight="bold">?</text>
+                        </svg>
                     </div>
-                `;
+                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-20 transition-opacity blur-xl"></div>
+                </button>
 
-                const btn = document.getElementById('drawButton');
-                if (btn) {
-                    btn.onclick = handleDrawCard;
-                }
-            } else {
-                content.innerHTML = `
-                    <div class="space-y-6 fade-in">
-                        <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 min-h-[320px] flex items-center justify-center">
-                            <p class="text-2xl text-gray-800 text-center leading-relaxed font-medium">
-                                ${currentQuestion}
-                            </p>
-                        </div>
+                <p class="text-white/70 text-center text-sm mt-8">${t.tap}</p>
 
-                        <button
-                            id="resetButton"
-                            class="w-full bg-white/20 backdrop-blur-lg text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="23 4 23 10 17 10"></polyline>
-                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                            </svg>
-                            ${t.drawAnother}
-                        </button>
-
-                        ${usedQuestions.length === questions[currentLang].length ? `
-                            <div class="text-center text-white/80 text-xs bg-white/10 backdrop-blur-lg rounded-xl p-3">
-                                🎉 ${currentLang === 'en' ? "You've seen all questions! They'll reset on the next draw." : currentLang === 'it' ? "Hai visto tutte le domande! Si resetteranno alla prossima pescata." : currentLang === 'es' ? "¡Has visto todas las preguntas! Se reiniciarán en el próximo sorteo." : currentLang === 'fr' ? "Vous avez vu toutes les questions! Elles se réinitialiseront au prochain tirage." : "Du hast alle Fragen gesehen! Sie werden beim nächsten Ziehen zurückgesetzt."}
-                            </div>
-                        ` : ''}
+                ${usedQuestions.length > 0 ? `
+                    <div class="text-white/60 text-sm">
+                        ${usedQuestions.length} / ${questions[currentLang].length} ${usedQuestions.length !== 1 ? t.questionsPlural : t.questions} ${t.asked}
                     </div>
-                `;
+                ` : ''}
+            </div>
+        `;
+        const btn = document.getElementById('drawButton');
+        if (btn) btn.onclick = handleDrawCard;
+    } else {
+        content.innerHTML = `
+            <div class="space-y-6 fade-in">
+                <div class="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 min-h-[320px] flex items-center justify-center">
+                    <p class="text-2xl text-gray-800 text-center leading-relaxed font-medium">
+                        ${currentQuestion}
+                    </p>
+                </div>
 
-                const resetBtn = document.getElementById('resetButton');
-                if (resetBtn) {
-                    resetBtn.onclick = handleDrawCard;
-                }
-            }
-        }
+                <button
+                    id="resetButton"
+                    class="w-full bg-white/20 backdrop-blur-lg text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                    ${t.drawAnother}
+                </button>
 
-        render();
-    </script>
+                ${usedQuestions.length === questions[currentLang].length ? `
+                    <div class="text-center text-white/80 text-xs bg-white/10 backdrop-blur-lg rounded-xl p-3">
+                        🎉 ${t.resetMsg}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        const resetBtn = document.getElementById('resetButton');
+        if (resetBtn) resetBtn.onclick = handleDrawCard;
+    }
+}
+
+document.getElementById('langButton').addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuOpen = !menuOpen;
+    document.getElementById('langMenu').classList.toggle('hidden', !menuOpen);
+});
+
+document.addEventListener('click', () => {
+    if (menuOpen) {
+        menuOpen = false;
+        document.getElementById('langMenu').classList.add('hidden');
+    }
+});
+
+document.querySelectorAll('.lang-option').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentLang = btn.dataset.lang;
+        usedQuestions = [];
+        document.getElementById('currentLangFlag').textContent = btn.dataset.flag;
+        document.getElementById('currentLangText').textContent = langNames[currentLang];
+        menuOpen = false;
+        document.getElementById('langMenu').classList.add('hidden');
+
+        render(); 
+    });
+});
+
+render();
+</script>
 </body>
 </html>
