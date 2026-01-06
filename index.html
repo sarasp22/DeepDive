@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Dive - Conversation Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+                @keyframes cardShuffle {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(0.94) rotate(-3deg); opacity: 0.6; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .shuffle {
+            animation: cardShuffle 0.6s ease-in-out;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center p-4 overflow-hidden relative">
+
+      <div class="absolute top-4 right-4 z-10">
+            <div class="relative">
+                <button id="langButton" class="bg-white/20 backdrop-blur-lg text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 hover:bg-white/30 transition-all duration-300 shadow-lg">
+                    <span id="currentLangFlag">🇬🇧</span>
+                    <span id="currentLangText">EN</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <div id="langMenu" class="hidden absolute top-full right-0 mt-2 bg-white/95 backdrop-blur-lg rounded-xl shadow-2xl overflow-hidden min-w-[140px]">
+                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="en" data-flag="🇬🇧">
+                        <span class="text-xl">🇬🇧</span>
+                        <span class="text-gray-800 font-medium">English</span>
+                    </button>
+                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="it" data-flag="🇮🇹">
+                        <span class="text-xl">🇮🇹</span>
+                        <span class="text-gray-800 font-medium">Italiano</span>
+                    </button>
+                    <button class="lang-option w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors flex items-center gap-3" data-lang="fr" data-flag="🇫🇷">
+                        <span class="text-xl">🇫🇷</span>
+                        <span class="text-gray-800 font-medium">Français</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-300/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        </div>
+
+        <div id="content" class="relative w-full max-w-md"></div>
+    </div>
+
+    <script>
+        const questions = {
+            en: [
+                "What's a moment in your life that completely changed your perspective?",
+                "If you could have dinner with anyone, living or dead, who would it be and why?",
+                "What's something you believe that most people disagree with?",
+                "When was the last time you felt truly alive?",
+                "What's a fear you've overcome, and how did you do it?",
+                "If you could relive one day of your life, which would it be?",
+                "What's the most important lesson life has taught you so far?",
+                "What do you think happens when we die?",
+                "What's something you're grateful for that you often take for granted?",
+                "If you had to teach something, what would you teach?",
+                "What's a dream you've given up on, and do you regret it?",
+                "What does love mean to you?",
+                "If you could change one thing about the world, what would it be?",
+                "What's the bravest thing you've ever done?",
+                "What makes you feel most like yourself?",
+                "What's a childhood memory that still influences you today?",
+                "If you could know the absolute truth to one question, what would you ask?",
+                "What's something you've never told anyone?",
+                "What do you think your purpose in life is?",
+                "What's the best advice you've ever received?",
+                "If you had one year left to live, how would you spend it?",
+                "What's a relationship that shaped who you are today?",
+                "What are you most proud of?",
+                "What does happiness mean to you?",
+                "If you could master any skill instantly, what would it be and why?",
+                "What's something you wish you had said to someone but never did?",
+                "What's the most difficult decision you've ever had to make?",
+                "What do you think is your greatest strength? Your greatest weakness?",
+                "If you could witness any event of the past, present, or future, what would it be?",
+                "What's a belief you held strongly in the past that you no longer believe?",
+                "What does success look like to you?",
+                "If you could write a letter to your younger self, what would you say?",
+                "What's something that scares you about the future?",
+                "When do you feel most connected to others?",
+                "What's a mistake you're grateful you made?",
+                "If you could eliminate one emotion, would you? Which one and why?",
+                "What's the most meaningful gift you've ever received?",
+                "How do you want to be remembered?",
+                "What's something you do that makes you lose track of time?",
+                "If you could ask your future self one question, what would it be?",
+                "What does forgiveness mean to you?",
+                "What's a quality you admire in others but struggle with yourself?",
+                "If you could experience life from someone else's perspective for a day, whose would it be?",
+                "What's something you've learned recently that changed how you think?",
+                "What does home mean to you?",
+                "If you had to describe yourself in three words, what would they be and why?",
+                "What's a tradition you'd like to start or continue?",
+                "What makes you feel vulnerable?",
+                "If you could go back and give your parents one piece of advice, what would it be?",
+                "What's something you're still trying to figure out about yourself?",
+                "What's your relationship with failure?",
+                "If you could change one decision from your past, what would it be?",
+                "What brings you peace?",
+                "What's a question you wish people would ask you?",
+                "How do you define a meaningful life?",
+                "What's something you've lost that you still think about?",
+                "If you could have a conversation with your 80-year-old self, what would you ask?",
+                "What's a part of your identity that took you a long time to accept?",
+                "What does vulnerability mean to you?",
+                "What's something you wish you cared less about?",
+                "If you could guarantee one thing for your future, what would it be?",
+                "What's a compliment you've received that really stuck with you?",
+                "What do you think people misunderstand about you?",
+                "What's your biggest regret, if you have one?",
+                "How has your definition of love changed over time?",
+                "What's something you're slowly learning to let go of?",
+                "If you could fix one relationship in your life, which would it be and why?",
+                "What's a small moment that had a big impact on you?",
+                "What do you think is the difference between being alive and truly living?",
+                "What's something you judge yourself for?",
+                "If you could give advice to everyone in the world, what would it be?",
+                "What's a truth about yourself that's hard to admit?",
+                "What makes you feel seen and understood?",
+                "What's something you wish your younger self had known?",
+                "How do you know when you've made the right decision?",
+                "What's something you're afraid to want?",
+                "What does intimacy mean to you?",
+                "What's a question you're afraid to know the answer to?",
+                "If you could change the way you were raised, would you? How?",
+                "What's something you've accepted about life that was hard to accept?",
+                "What role does hope play in your life?",
+                "What's the difference between who you are and who you want to be?",
+                "What's something you do to feel more like yourself?",
+                "If you could have one superpower for a day, what would it reveal about what you value?",
+                "What's a conversation you need to have but keep avoiding?",
+                "What does it mean to live authentically?",
+                "What's something you're learning to be more patient with?",
+                "If you could feel one emotion more deeply, which would it be?",
+                "What's a lie you've told yourself?",
+                "What makes you feel most alive?",
+                "What's something you hope never changes about you?",
+                "If you could know one thing about how others see you, what would you want to know?",
+                "What's a part of yourself you're still getting to know?",
+                "What would you do if you weren't afraid?",
+                "What's the most honest thing you could say right now?",
+                "What do you need to hear today?",
+                "What does courage mean to you?",
+                "What's something you wish more people understood?",
+                "If your life was a book, what would this chapter be called?"
+            ],
+            it: [
+                "Qual è un momento della tua vita che ha cambiato completamente la tua prospettiva?",
+                "Se potessi cenare con chiunque, vivo o morto, chi sarebbe e perché?",
+                "Qual è qualcosa in cui credi ma con cui la maggior parte delle persone non è d'accordo?",
+                "Quando è stata l'ultima volta che ti sei sentito veramente vivo?",
+                "Qual è una paura che hai superato e come l'hai fatto?",
+                "Se potessi rivivere un giorno della tua vita, quale sarebbe?",
+                "Qual è la lezione più importante che la vita ti ha insegnato finora?",
+                "Cosa pensi che succeda quando moriamo?",
+                "Per cosa sei grato ma che spesso dai per scontato?",
+                "Se dovessi insegnare qualcosa, cosa insegneresti?",
+                "Qual è un sogno a cui hai rinunciato e te ne penti?",
+                "Cosa significa per te l'amore?",
+                "Se potessi cambiare una cosa nel mondo, quale sarebbe?",
+                "Qual è la cosa più coraggiosa che tu abbia mai fatto?",
+                "Cosa ti fa sentire più te stesso?",
+                "Qual è un ricordo d'infanzia che ancora oggi ti influenza?",
+                "Se potessi conoscere la verità assoluta su una domanda, quale faresti?",
+                "Qual è qualcosa che non hai mai detto a nessuno?",
+                "Qual pensi sia il tuo scopo nella vita?",
+                "Qual è il miglior consiglio che tu abbia mai ricevuto?",
+                "Se ti rimanesse un anno di vita, come lo trascorreresti?",
+                "Qual è una relazione che ha plasmato chi sei oggi?",
+                "Di cosa sei più orgoglioso?",
+                "Cosa significa per te la felicità?",
+                "Se potessi padroneggiare istantaneamente una qualsiasi abilità, quale sarebbe e perché?",
+                "Cosa avresti voluto dire a qualcuno ma non l'hai mai fatto?",
+                "Qual è la decisione più difficile che tu abbia mai dovuto prendere?",
+                "Qual pensi sia il tuo più grande punto di forza? E la tua più grande debolezza?",
+                "Se potessi assistere a qualsiasi evento del passato, presente o futuro, quale sarebbe?",
+                "Qual è una convinzione che avevi fortemente in passato ma che non credi più?",
+                "Come definisci il successo?",
+                "Se potessi scrivere una lettera al tuo io più giovane, cosa diresti?",
+                "Cosa ti spaventa del futuro?",
+                "Quando ti senti più connesso agli altri?",
+                "Qual è un errore di cui sei grato di aver fatto?",
+                "Se potessi eliminare un'emozione, lo faresti? Quale e perché?",
+                "Qual è il regalo più significativo che tu abbia mai ricevuto?",
+                "Come vorresti essere ricordato?",
+                "Qual è qualcosa che fai che ti fa perdere la cognizione del tempo?",
+                "Se potessi fare una domanda al tuo io futuro, quale sarebbe?",
+                "Cosa significa per te il perdono?",
+                "Qual è una qualità che ammiri negli altri ma con cui tu fai fatica?",
+                "Se potessi vivere la vita dal punto di vista di qualcun altro per un giorno, chi sarebbe?",
+                "Cosa hai imparato di recente che ha cambiato il tuo modo di pensare?",
+                "Cosa significa per te casa?",
+                "Se dovessi descriverti in tre parole, quali sarebbero e perché?",
+                "Qual è una tradizione che vorresti iniziare o continuare?",
+                "Cosa ti fa sentire vulnerabile?",
+                "Se potessi tornare indietro e dare un consiglio ai tuoi genitori, quale sarebbe?",
+                "Cosa stai ancora cercando di capire su te stesso?",
+                "Qual è il tuo rapporto con il fallimento?",
+                "Se potessi cambiare una decisione del tuo passato, quale sarebbe?",
+                "Cosa ti porta pace?",
+                "Qual è una domanda che vorresti che le persone ti facessero?",
+                "Come definisci una vita significativa?",
+                "Qual è qualcosa che hai perso e a cui pensi ancora?",
+                "Se potessi avere una conversazione con te stesso a 80 anni, cosa chiederesti?",
+                "Qual è una parte della tua identità che ci hai messo molto tempo ad accettare?",
+                "Cosa significa per te la vulnerabilità?",
+                "Qual è qualcosa a cui vorresti dare meno importanza?",
+                "Se potessi garantire una cosa per il tuo futuro, quale sarebbe?",
+                "Qual è un complimento che hai ricevuto e che ti è rimasto impresso?",
+                "Cosa pensi che le persone fraintendano di te?",
+                "Qual è il tuo più grande rimpianto, se ne hai uno?",
+                "Come è cambiata la tua definizione di amore nel tempo?",
+                "Qual è qualcosa che stai lentamente imparando a lasciar andare?",
+                "Se potessi sistemare una relazione nella tua vita, quale sarebbe e perché?",
+                "Qual è un piccolo momento che ha avuto un grande impatto su di te?",
+                "Qual pensi sia la differenza tra essere vivi e vivere veramente?",
+                "Per cosa ti giudichi?",
+                "Se potessi dare un consiglio a tutti nel mondo, quale sarebbe?",
+                "Qual è una verità su te stesso che è difficile ammettere?",
+                "Cosa ti fa sentire visto e compreso?",
+                "Cosa vorresti che il tuo io più giovane avesse saputo?",
+                "Come fai a sapere quando hai preso la decisione giusta?",
+                "Qual è qualcosa che hai paura di desiderare?",
+                "Cosa significa per te l'intimità?",
+                "Qual è una domanda di cui hai paura di conoscere la risposta?",
+                "Se potessi cambiare il modo in cui sei stato cresciuto, lo faresti? Come?",
+                "Qual è qualcosa che hai accettato della vita che è stato difficile accettare?",
+                "Che ruolo gioca la speranza nella tua vita?",
+                "Qual è la differenza tra chi sei e chi vuoi essere?",
+                "Qual è qualcosa che fai per sentirti più te stesso?",
+                "Se potessi avere un superpotere per un giorno, cosa rivelerebbe su ciò che apprezzi?",
+                "Qual è una conversazione che devi avere ma continui a evitare?",
+                "Cosa significa vivere autenticamente?",
+                "Qual è qualcosa con cui stai imparando ad essere più paziente?",
+                "Se potessi provare un'emozione più profondamente, quale sarebbe?",
+                "Qual è una bugia che ti sei detto?",
+                "Cosa ti fa sentire più vivo?",
+                "Qual è qualcosa che speri non cambi mai di te?",
+                "Se potessi sapere una cosa su come gli altri ti vedono, cosa vorresti sapere?",
+                "Qual è una parte di te che stai ancora conoscendo?",
+                "Cosa faresti se non avessi paura?",
+                "Qual è la cosa più onesta che potresti dire adesso?",
+                "Cosa hai bisogno di sentirti dire oggi?",
+                "Cosa significa per te il coraggio?",
+                "Qual è qualcosa che vorresti che più persone capissero?",
+                "Se la tua vita fosse un libro, come si chiamerebbe questo capitolo?"
+            ],
+            fr: [
+                "Quel est un moment de votre vie qui a complètement changé votre perspective?",
+                "Si vous pouviez dîner avec n'importe qui, vivant ou mort, qui serait-ce et pourquoi?",
+                "En quoi croyez-vous que la plupart des gens ne sont pas d'accord avec vous?",
+                "Quand était la dernière fois que vous vous êtes senti vraiment vivant?",
+                "Quelle est une peur que vous avez surmontée et comment l'avez-vous fait?",
+                "Si vous pouviez revivre un jour de votre vie, lequel serait-ce?",
+                "Quelle est la leçon la plus importante que la vie vous a enseignée jusqu'à présent?",
+                "Que pensez-vous qu'il se passe quand nous mourrons?",
+                "Pour quoi êtes-vous reconnaissant mais que vous prenez souvent pour acquis?",
+                "Si vous deviez enseigner quelque chose, qu'enseigneriez-vous?",
+                "Quel est un rêve auquel vous avez renoncé et le regrettez-vous?",
+                "Que signifie l'amour pour vous?",
+                "Si vous pouviez changer une chose dans le monde, quelle serait-elle?",
+                "Quelle est la chose la plus courageuse que vous ayez jamais faite?",
+                "Qu'est-ce qui vous fait vous sentir le plus vous-même?",
+                "Quel est un souvenir d'enfance qui vous influence encore aujourd'hui?",
+                "Si vous pouviez connaître la vérité absolue sur une question, laquelle poseriez-vous?",
+                "Qu'est-ce que vous n'avez jamais dit à personne?",
+                "Quel pensez-vous être votre but dans la vie?",
+                "Quel est le meilleur conseil que vous ayez jamais reçu?",
+                "S'il vous restait un an à vivre, comment le passeriez-vous?",
+                "Quelle est une relation qui a façonné qui vous êtes aujourd'hui?",
+                "De quoi êtes-vous le plus fier?",
+                "Que signifie le bonheur pour vous?",
+                "Si vous pouviez maîtriser instantanément n'importe quelle compétence, laquelle serait-ce et pourquoi?",
+                "Qu'est-ce que vous auriez aimé dire à quelqu'un mais ne l'avez jamais fait?",
+                "Quelle est la décision la plus difficile que vous ayez jamais dû prendre?",
+                "Quelle pensez-vous être votre plus grande force? Et votre plus grande faiblesse?",
+                "Si vous pouviez assister à n'importe quel événement du passé, du présent ou du futur, lequel serait-ce?",
+                "Quelle est une croyance que vous aviez fortement dans le passé mais que vous ne croyez plus?",
+                "Comment définissez-vous le succès?",
+                "Si vous pouviez écrire une lettre à votre moi plus jeune, que diriez-vous?",
+                "Qu'est-ce qui vous fait peur dans l'avenir?",
+                "Quand vous sentez-vous le plus connecté aux autres?",
+                "Quelle est une erreur dont vous êtes reconnaissant d'avoir faite?",
+                "Si vous pouviez éliminer une émotion, le feriez-vous? Laquelle et pourquoi?",
+                "Quel est le cadeau le plus significatif que vous ayez jamais reçu?",
+                "Comment aimeriez-vous être rappelé?",
+                "Qu'est-ce que vous faites qui vous fait perdre la notion du temps?",
+                "Si vous pouviez poser une question à votre futur moi, quelle serait-elle?",
+                "Que signifie le pardon pour vous?",
+                "Quelle est une qualité que vous admirez chez les autres mais avec laquelle vous luttez?",
+                "Si vous pouviez vivre la vie du point de vue de quelqu'un d'autre pendant une journée, qui serait-ce?",
+                "Qu'avez-vous appris récemment qui a changé votre façon de penser?",
+                "Que signifie la maison pour vous?",
+                "Si vous deviez vous décrire en trois mots, quels seraient-ils et pourquoi?",
+                "Quelle est une tradition que vous aimeriez commencer ou continuer?",
+                "Qu'est-ce qui vous fait vous sentir vulnérable?",
+                "Si vous pouviez revenir en arrière et donner un conseil à vos parents, quel serait-il?",
+                "Qu'essayez-vous encore de comprendre sur vous-même?",
+                "Quelle est votre relation avec l'échec?",
+                "Si vous pouviez changer une décision de votre passé, laquelle serait-ce?",
+                "Qu'est-ce qui vous apporte la paix?",
+                "Quelle est une question que vous aimeriez que les gens vous posent?",
+                "Comment définissez-vous une vie significative?",
+                "Qu'est-ce que vous avez perdu et auquel vous pensez encore?",
+                "Si vous pouviez avoir une conversation avec vous-même à 80 ans, que demanderiez-vous?",
+                "Quelle est une partie de votre identité qu'il vous a fallu longtemps pour accepter?",
+                "Que signifie la vulnérabilité pour vous?",
+                "Qu'est-ce que vous aimeriez moins vous soucier?",
+                "Si vous pouviez garantir une chose pour votre avenir, quelle serait-elle?",
+                "Quel est un compliment que vous avez reçu qui vous est vraiment resté?",
+                "Que pensez-vous que les gens comprennent mal à propos de vous?",
+                "Quel est votre plus grand regret, si vous en avez un?",
+                "Comment votre définition de l'amour a-t-elle changé au fil du temps?",
+                "Qu'est-ce que vous apprenez lentement à lâcher prise?",
+                "Si vous pouviez réparer une relation dans votre vie, laquelle serait-ce et pourquoi?",
+                "Quel est un petit moment qui a eu un grand impact sur vous?",
+                "Quelle pensez-vous être la différence entre être vivant et vraiment vivre?",
+                "Pour quoi vous jugez-vous?",
+                "Si vous pouviez donner un conseil à tout le monde dans le monde, quel serait-il?",
+                "Quelle est une vérité sur vous-même qui est difficile à admettre?",
+                "Qu'est-ce qui vous fait vous sentir vu et compris?",
+                "Qu'est-ce que vous auriez aimé que votre moi plus jeune sache?",
+                "Comment savez-vous quand vous avez pris la bonne décision?",
+                "Qu'est-ce que vous avez peur de vouloir?",
+                "Que signifie l'intimité pour vous?",
+                "Quelle est une question dont vous avez peur de connaître la réponse?",
+                "Si vous pouviez changer la façon dont vous avez été élevé, le feriez-vous? Comment?",
+                "Qu'est-ce que vous avez accepté dans la vie qui était difficile à accepter?",
+                "Quel rôle joue l'espoir dans votre vie?",
+                "Quelle est la différence entre qui vous êtes et qui vous voulez être?",
+                "Qu'est-ce que vous faites pour vous sentir plus vous-même?",
+                "Si vous pouviez avoir un superpouvoir pendant un jour, que révélerait-il sur ce que vous valorisez?",
+                "Quelle est une conversation que vous devez avoir mais que vous continuez à éviter?",
+                "Que signifie vivre authentiquement?",
+                "Avec quoi apprenez-vous à être plus patient?",
+                "Si vous pouviez ressentir une émotion plus profondément, laquelle serait-ce?",
+                "Quel est un mensonge que vous vous êtes dit?",
+                "Qu'est-ce qui vous fait vous sentir le plus vivant?",
+                "Qu'est-ce que vous espérez ne jamais changer chez vous?",
+                "Si vous pouviez savoir une chose sur la façon dont les autres vous voient, que voudriez-vous savoir?",
+                "Quelle est une partie de vous-même que vous apprenez encore à connaître?",
+                "Que feriez-vous si vous n'aviez pas peur?",
+                "Quelle est la chose la plus honnête que vous pourriez dire maintenant?",
+                "Qu'avez-vous besoin d'entendre aujourd'hui?",
+                "Que signifie le courage pour vous?",
+                "Qu'est-ce que vous aimeriez que plus de gens comprennent?",
+                "Si votre vie était un livre, comment s'appellerait ce chapitre?"
+            ]
+        };
+
+        let currentQuestion = '';
+        let showQuestion = false;
+        let usedQuestions = [];
+        let currentLang = 'en';
+        let menuOpen = false;
+
+        const langNames = {
+            'en': 'EN',
+            'it': 'IT',
+            'fr': 'FR'
+        };
+
+        document.getElementById('langButton').addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuOpen = !menuOpen;
+            document.getElementById('langMenu').classList.toggle('hidden', !menuOpen);
+        });
+
+        document.addEventListener('click', () => {
+            if (menuOpen) {
+                menuOpen = false;
+                document.getElementById('langMenu').classList.add('hidden');
+            }
+        });
+
+        document.querySelectorAll('.lang-option').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentLang = btn.dataset.lang;
+                usedQuestions = [];
+                document.getElementById('currentLangFlag').textContent = btn.dataset.flag;
+                document.getElementById('currentLangText').textContent = langNames[currentLang];
+                menuOpen = false;
+                document.getElementById('langMenu').classList.add('hidden');
+            });
+        });
+
+        let isLoading = false;
+
+/* =========================
+   LOGICA
+========================= */
+function drawQuestion() {
+    const available = questions[currentLang].filter(q => !usedQuestions.includes(q));
+    if (!available.length) usedQuestions = [];
+
+    currentQuestion = available[Math.floor(Math.random() * available.length)];
+    usedQuestions.push(currentQuestion);
+    showQuestion = true;
+    render();
+}
+
+/* ⭐ MODIFICATA */
+function handleDrawCard(e) {
+    e.preventDefault();
+
+    if (isLoading) return;
+    isLoading = true;
+
+    const card = document.querySelector('.card');
+
+    if (card) {
+        card.classList.add('shuffle');
+        card.innerHTML = `
+            <div class="spinner w-10 h-10 border-4 border-purple-400 border-t-transparent rounded-full"></div>
+        `;
+    }
+
+    setTimeout(() => {
+        drawQuestion();
+        isLoading = false;
+    }, 700);
+}
+
+/* =========================
+   RENDER
+========================= */
+function render() {
+    const content = document.getElementById('content');
+
+    if (!showQuestion) {
+        content.innerHTML = `
+            <div class="flex flex-col items-center space-y-8">
+                <button
+                    id="drawButton"
+                    class="w-64 h-64 bg-white/95 rounded-3xl shadow-2xl flex items-center justify-center"
+                >
+                    <span class="text-7xl font-bold text-purple-600">?</span>
+                </button>
+            </div>
+        `;
+        document.getElementById('drawButton').onclick = handleDrawCard;
+    } else {
+        content.innerHTML = `
+            <div class="space-y-6 fade-in">
+
+                <!-- ⭐ CARTA: qui ho aggiunto la classe .card -->
+                <div class="card bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl p-8 min-h-[320px] flex items-center justify-center">
+                    <p class="text-2xl text-gray-800 text-center font-medium">
+                        ${currentQuestion}
+                    </p>
+                </div>
+
+                <button
+                    id="resetButton"
+                    class="w-full bg-white/20 text-white py-4 rounded-2xl font-semibold"
+                >
+                    Draw Another Card
+                </button>
+            </div>
+        `;
+        document.getElementById('resetButton').onclick = handleDrawCard;
+    }
+}
+
+render();
+    </script>
+</body>
+</html>
